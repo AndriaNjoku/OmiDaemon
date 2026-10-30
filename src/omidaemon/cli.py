@@ -9,6 +9,7 @@ from .models import TranscriptDocument
 from .watcher import StateTracker, LocalDriveWatcher
 from .processor import LLMClient, ContextEngine
 from .dispatchers import ActionRouter
+from .service import DaemonService
 
 
 def process_single_file(file_path: Path, config: AppConfig, force: bool = False) -> None:
@@ -129,8 +130,20 @@ def main() -> None:
     parser.add_argument("--config", "-c", help="Path to config.yaml", default=None)
     subparsers = parser.add_subparsers(dest="command")
 
-    # Command: start
-    subparsers.add_parser("start", help="Start continuous Google Drive monitoring daemon")
+    # Command: start (foreground)
+    subparsers.add_parser("start", help="Start continuous Google Drive monitoring in foreground")
+
+    # Command: start-bg (background)
+    subparsers.add_parser("start-bg", help="Start continuous monitoring daemon in background (windowless)")
+
+    # Command: stop-bg (background)
+    subparsers.add_parser("stop-bg", help="Stop running background daemon")
+
+    # Command: status-bg
+    subparsers.add_parser("status-bg", help="Check status of background daemon process")
+
+    # Command: install-startup
+    subparsers.add_parser("install-startup", help="Configure OmiDaemon to auto-start on Windows login")
 
     # Command: process <file>
     process_p = subparsers.add_parser("process", help="Process a single transcript file")
@@ -142,12 +155,44 @@ def main() -> None:
 
     args = parser.parse_args()
     config = AppConfig.load(args.config)
+    service = DaemonService()
 
     if args.command == "start" or args.command is None:
         if args.command is None and len(sys.argv) > 1:
             parser.print_help()
             sys.exit(1)
         run_daemon(config)
+    elif args.command == "start-bg":
+        res = service.start_background(args.config)
+        if res["status"] == "started":
+            print(f"[OmiDaemon] Background daemon started successfully (PID: {res['pid']}).")
+            print(f"[OmiDaemon] Logging to: {res['log']}")
+        elif res["status"] == "already_running":
+            print(f"[OmiDaemon] Daemon is already running (PID: {res['pid']}). Log: {res['log']}")
+        else:
+            print(f"[OmiDaemon] Failed to start daemon: {res}")
+    elif args.command == "stop-bg":
+        res = service.stop_background()
+        if res["status"] == "stopped":
+            print(f"[OmiDaemon] Stopped background daemon (PID: {res['pid']}).")
+        elif res["status"] == "not_running":
+            print("[OmiDaemon] No background daemon is currently running.")
+        else:
+            print(f"[OmiDaemon] Error stopping daemon: {res}")
+    elif args.command == "status-bg":
+        running, pid = service.is_running()
+        if running:
+            print(f"[OmiDaemon] Background daemon is RUNNING (PID: {pid}).")
+            print(f"[OmiDaemon] Log file: {service.log_file}")
+        else:
+            print("[OmiDaemon] Background daemon is STOPPED.")
+    elif args.command == "install-startup":
+        res = service.install_startup_task()
+        if res["status"] == "installed":
+            print(f"[OmiDaemon] Windows startup task '{res['task_name']}' created successfully.")
+            print("[OmiDaemon] The daemon will automatically launch in the background whenever you log into Windows.")
+        else:
+            print(f"[OmiDaemon] Failed to install startup task: {res.get('error')}")
     elif args.command == "process":
         process_single_file(Path(args.file), config, force=args.force)
     elif args.command == "status":

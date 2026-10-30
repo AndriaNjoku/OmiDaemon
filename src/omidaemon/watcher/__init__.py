@@ -2,5 +2,6 @@
 
 from .state_tracker import StateTracker
 from .local_watcher import LocalDriveWatcher
+from .drive_api_watcher import GoogleDriveAPIWatcher
 
-__all__ = ["StateTracker", "LocalDriveWatcher"]
+__all__ = ["StateTracker", "LocalDriveWatcher", "GoogleDriveAPIWatcher"]
