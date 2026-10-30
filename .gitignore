@@ -18,6 +18,7 @@ env/
 
 # State and local run data
 data/
+output/
 *.sqlite3
 *.db
 .cache/

@@ -1,0 +1,47 @@
+# Default Configuration for OmiDaemon
+llm:
+  provider: gemini
+  model: gemini-2.5-flash
+  temperature: 0.2
+
+source:
+  drive_path: ""
+  poll_interval_seconds: 15
+  file_patterns:
+    - "*.txt"
+    - "*.md"
+    - "*.json"
+
+obsidian:
+  enabled: true
+  vault_path: ""
+  subdir: "Executive Briefs"
+  create_daily_link: true
+  tags:
+    - meeting
+    - wearable-notes
+    - executive
+
+email:
+  enabled: false
+  smtp_host: "smtp.gmail.com"
+  smtp_port: 587
+  use_tls: true
+  username: ""
+  password: ""
+  partner_email: ""
+  staff_email: ""
+  self_email: ""
+
+slides:
+  enabled: true
+  output_dir: "output/slides"
+  theme: "gaia"
+
+calendar:
+  enabled: true
+  output_dir: "output/calendar"
+
+routing_rules:
+  auto_email_threshold: "partner_or_staff_decision"
+  auto_slide_threshold: "pitch_or_strategic_review"

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omidaemon"
+version = "0.1.0"
+description = "Autonomous daemon processing wearable AI transcripts from Google Drive into Obsidian, emails, calendar, and slides."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "Andria" }
+]
+dependencies = [
+    "pyyaml>=6.0",
+    "httpx>=0.27.0"
+]
+
+[project.scripts]
+omi-daemon = "omidaemon.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

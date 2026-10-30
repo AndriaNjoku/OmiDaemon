@@ -1,0 +1,4 @@
+[00:00:05] CEO: Welcome everyone. We need to align on our Q1 executive goals and partnership roadmap.
+[00:00:15] CTO: On the engineering side, the new data pipeline is 80% complete. We can cut over by next Tuesday.
+[00:00:30] Partner: Fantastic. If we hit that Tuesday cutover, we can brief the entire staff by Thursday morning.
+[00:00:45] CEO: Agreed. Let's make sure the notes and action items are shared with the partner and the staff immediately after this sync.
