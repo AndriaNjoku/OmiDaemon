@@ -5,7 +5,7 @@ llm:
   temperature: 0.2
 
 source:
-  drive_path: ""
+  drive_path: "G:\\My Drive\\OMI"
   poll_interval_seconds: 15
   file_patterns:
     - "*.txt"
@@ -14,13 +14,14 @@ source:
 
 obsidian:
   enabled: true
-  vault_path: ""
+  vault_path: "C:\\Users\\andri\\Documents\\Agentic Workflow Repository\\personal\\Obsidian-Vault-main"
   subdir: "Executive Briefs"
   create_daily_link: true
   tags:
     - meeting
     - wearable-notes
     - executive
+    - omi
 
 email:
   enabled: false
