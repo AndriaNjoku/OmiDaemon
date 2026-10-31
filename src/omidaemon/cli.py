@@ -142,6 +142,9 @@ def main() -> None:
     # Command: status-bg
     subparsers.add_parser("status-bg", help="Check status of background daemon process")
 
+    # Command: tray
+    subparsers.add_parser("tray", help="Launch the native Windows System Tray application")
+
     # Command: install-startup
     subparsers.add_parser("install-startup", help="Configure OmiDaemon to auto-start on Windows login")
 
@@ -186,6 +189,14 @@ def main() -> None:
             print(f"[OmiDaemon] Log file: {service.log_file}")
         else:
             print("[OmiDaemon] Background daemon is STOPPED.")
+    elif args.command == "tray":
+        tray_exe = Path(__file__).resolve().parent.parent.parent / "windows" / "OmiDaemonTray.exe"
+        if not tray_exe.exists():
+            print(f"[Error] Tray executable not found at {tray_exe}. Run windows/build_tray.ps1 to build it.", file=sys.stderr)
+            sys.exit(1)
+        import subprocess
+        print(f"[OmiDaemon] Launching System Tray application ({tray_exe.name})...")
+        subprocess.Popen([str(tray_exe)], cwd=str(tray_exe.parent.parent))
     elif args.command == "install-startup":
         res = service.install_startup_task()
         if res["status"] == "installed":

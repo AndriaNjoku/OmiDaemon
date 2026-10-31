@@ -1,82 +1,196 @@
-# OmiDaemon
+# 🎙️ OmiDaemon
 
-Autonomous executive intelligence daemon for wearable audio transcripts (Omi / Friend / wearable hardware syncing to Google Drive).
+> **Autonomous Executive Intelligence Daemon & Windows System Tray App for Omi Wearable Transcripts**
 
-Supervised under **Notch Standard 1.0** with **Nudge**.
-
----
-
-## 🌟 Overview
-
-When you wear your AI audio hardware (Omi / Based Hardware / open-source wearable), conversations are transcribed and saved to Google Drive.
-
-**OmiDaemon** runs continuously as a silent background Windows daemon to:
-1. **Watch Google Drive**:
-   - **Local Sync Watcher**: Watches your Google Drive for Desktop sync folder instantly with zero API overhead.
-   - **Drive API Watcher**: Connects directly to Google Drive REST API v3 using credentials/OAuth tokens.
-2. **Contextualize & Reason**:
-   - Analyzes conversations with your own LLM API key (Gemini, OpenAI, or Anthropic).
-   - Categorizes meeting context (Executive Strategic, 1-on-1, Engineering Sync, Partner Update, Pitch, etc.).
-   - Extracts executive summaries, concrete decisions, and prioritized action items with assignees and due dates.
-3. **Autonomous Multi-Destination Routing**:
-   - 📓 **Obsidian Vault**: Creates formatted markdown notes with YAML frontmatter, tags, action checklists, and backlinks.
-   - 📧 **Executive Email Updates**: Drafts or automatically sends executive briefings to your partner, staff, or self.
-   - 📊 **Presentation Slides**: Generates Marp-compatible markdown presentation drafts when strategic topics or pitches are discussed.
-   - 📅 **Calendar Follow-ups**: Creates `.ics` calendar invitation files for scheduled commitments.
-4. **Zero Duplicate Processing**: SQLite state tracker (`omidaemon_state.db`) ensures every file is processed idempotently.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-brightgreen.svg)](pyproject.toml)
+[![Platform: Windows](https://img.shields.io/badge/Platform-Windows-0078D6.svg)](windows/)
+[![Supervised by Nudge](https://img.shields.io/badge/Notch_Standard-1.0-orange.svg)](https://notch.live)
 
 ---
 
-## 🚀 Running as a Background Daemon on Windows
+## 💡 The Why: Elevate Your Omi Wearable
 
-OmiDaemon is built to run windowless in the background using `pythonw.exe`:
+Wearable AI devices like **[Omi (Based Hardware)](https://www.basedhardware.com/)** are incredible hardware for capturing conversations, meetings, and thoughts on the go. 
 
-### 1. Launch in the Background (Detached)
-```powershell
-python -m omidaemon.cli start-bg
-```
-*Runs completely silently in the background with no open terminal window. Logs are written to `logs/omidaemon.log`.*
+While the official Omi companion app and subscription reliably sync raw transcript memories to your **Google Drive**, the default in-app processing is often limited, rigid, and disconnected from your personal workflow.
 
-### 2. Check Background Daemon Status
-```powershell
-python -m omidaemon.cli status-bg
-```
-*Reports whether the process is active, its PID, and log path.*
-
-### 3. Stop the Background Daemon
-```powershell
-python -m omidaemon.cli stop-bg
-```
-
-### 4. Auto-Start on Windows Login
-To have OmiDaemon start automatically in the background whenever you log into Windows:
-```powershell
-python -m omidaemon.cli install-startup
-```
-*Registers a lightweight Windows Scheduled Task running detached on user logon.*
+**OmiDaemon** gives you complete ownership over your conversation data:
+* **Your Own AI Brain**: Process notes with your own **Google Gemini**, **OpenAI**, or **Anthropic** API key (including Gemini's free tier).
+* **Deep Executive Context**: Analyzes conversations through an elite Chief of Staff persona for CEOs and CTOs.
+* **Instant Autonomous Routing**:
+  * 📓 **Obsidian Knowledge Base**: Automatically writes clean, structured Markdown notes with YAML frontmatter, tags, and checklist tasks into your vault.
+  * 📧 **Partner & Staff Briefings**: Drafts or automatically sends executive updates to your partner or team when decisions are made.
+  * 📊 **Slide Deck Drafts**: Automatically generates [Marp](https://marp.app/) markdown presentation decks when pitches or strategic reviews are discussed.
+  * 📅 **Calendar Follow-ups**: Extracts scheduled commitments and creates standard `.ics` calendar invitation files.
+* **Native Windows System Tray App**: Sits silently by your clock with real-time balloon notifications whenever a new memory is processed.
+* **100% Idempotent**: SQLite state database tracks file hashes to ensure no conversation is ever reprocessed or duplicated.
 
 ---
 
-## ⚙️ Configuration
+## 🏗️ Architecture
+
+```mermaid
+flowchart TD
+    subgraph Hardware ["1. Capture & Sync"]
+        Wearable["🎙️ Omi Wearable Device"]
+        CloudApp["Omi App & Subscription"]
+        GDrive["📁 Google Drive\n(G:\\My Drive\\OMI)"]
+        Wearable -->|Audio| CloudApp -->|Syncs Transcripts| GDrive
+    end
+
+    subgraph Daemon ["2. OmiDaemon Engine"]
+        Tray["🖥️ Windows System Tray\n(OmiDaemonTray.exe)"]
+        Watcher["Watcher Layer\n(Local Desktop Sync or Drive API)"]
+        Tracker[("State DB\n(SQLite: tracked hashes)")]
+        LLM["🧠 LLM Engine\n(Gemini 3.5 Flash / OpenAI / Claude)"]
+        
+        GDrive -->|New Transcript| Watcher
+        Watcher <--> Tracker
+        Watcher --> Parser["Omi Memory Parser"]
+        Parser --> LLM
+    end
+
+    subgraph Outputs ["3. Autonomous Multi-Channel Routing"]
+        LLM --> Router{"Action Router"}
+        Router -->|Personal Knowledge| Obsidian["📓 Obsidian Vault\n(Executive Briefs with Frontmatter & Tasks)"]
+        Router -->|Team Alignment| Email["📧 Executive Email\n(Drafts / SMTP Send to Partner & Staff)"]
+        Router -->|Strategy / Pitches| Slides["📊 Marp Slides Deck\n(Presentation Outlines)"]
+        Router -->|Commitments| Calendar["📅 Calendar Events\n(.ics Follow-up Invites)"]
+        Router -->|Balloon Notification| Tray
+    end
+```
+
+---
+
+## ⚡ Quick Start
+
+### 1. Prerequisites
+- **Windows 10 / 11**
+- **Python 3.11+**
+- **Google Drive for Desktop** (or Google Drive API credentials)
+- An active **Omi (Based Hardware)** device syncing transcripts to Google Drive
+
+### 2. Installation
+
+Clone the repository and install in editable mode:
+```powershell
+git clone https://github.com/AndriaNjoku/OmiDaemon.git
+cd OmiDaemon
+python -m pip install -e .
+```
+
+### 3. Configuration
 
 Copy `.env.example` to `.env`:
 ```powershell
 copy .env.example .env
 ```
 
-Key environment settings:
-- `OMIDAEMON_LLM_PROVIDER`: `gemini` (default), `openai`, or `anthropic`
-- `OMIDAEMON_LLM_API_KEY`: Your LLM API key
-- `OMIDAEMON_DRIVE_PATH`: Path to your local Google Drive transcripts folder (e.g. `G:\My Drive\Transcripts`)
-- `OMIDAEMON_OBSIDIAN_VAULT`: Path to your local Obsidian vault (e.g. `C:\Users\andri\Documents\ObsidianVault`)
-- `OMIDAEMON_EMAIL_PARTNER`: Partner's email address for briefings
-- `OMIDAEMON_EMAIL_STAFF`: Staff mailing list / team address
+Open `.env` and configure your settings:
+```ini
+# LLM Provider & Key (Gemini Flash has a free tier!)
+OMIDAEMON_LLM_PROVIDER=gemini
+OMIDAEMON_LLM_MODEL=gemini-3.5-flash-lite
+OMIDAEMON_LLM_API_KEY=your_gemini_or_openai_api_key
+
+# Google Drive Source Path (Where your OMI transcripts sync)
+OMIDAEMON_DRIVE_PATH=G:\My Drive\OMI
+
+# Obsidian Output Vault
+OMIDAEMON_OBSIDIAN_VAULT=C:\Users\YourUser\Documents\ObsidianVault
+OMIDAEMON_OBSIDIAN_SUBDIR=Executive Briefs
+
+# Email Updates (Optional - set true to email partner/staff)
+OMIDAEMON_EMAIL_ENABLED=false
+OMIDAEMON_EMAIL_PARTNER=partner@company.com
+OMIDAEMON_EMAIL_STAFF=team@company.com
+```
 
 ---
 
-## 🧪 Testing & Verification
+## 🖥️ Running OmiDaemon
 
-Run the test harness:
+### Option A: Native Windows System Tray Companion *(Recommended)*
+Launch the Windows System Tray application:
+```powershell
+python -m omidaemon.cli tray
+# or double-click windows\OmiDaemonTray.exe
+```
+
+**Tray Features:**
+* Sits in your Windows Notification Area (System Tray).
+* Right-click menu:
+  * **Scan Google Drive Now** — Instant check for new recordings.
+  * **Open Obsidian Notes** — One-click access to your generated notes.
+  * **Open Google Drive Folder** — Direct link to your synced recordings.
+  * **View Activity Log** — Quick diagnostic view.
+  * **Auto-Start with Windows** — Toggle automatic background start on login.
+* Displays native Windows balloon notifications whenever a transcript is digested!
+
+### Option B: Silent Background Daemon
+```powershell
+# Start silent background process (windowless via pythonw)
+python -m omidaemon.cli start-bg
+
+# Check background status
+python -m omidaemon.cli status-bg
+
+# Stop background process
+python -m omidaemon.cli stop-bg
+```
+
+### Option C: Manual Single File Processing (CLI)
+Test or process any specific recording file immediately:
+```powershell
+python -m omidaemon.cli process "G:\My Drive\OMI\OMI_20261021_195643.txt"
+```
+
+---
+
+## 📓 Sample Obsidian Output
+
+Here is what an automated note generated by OmiDaemon looks like inside your Obsidian vault:
+
+```markdown
+---
+title: "Investigation of Lip-Sync Hardener vs Audio Usage"
+date: 2026-10-21
+category: engineering_sync
+source_file: "OMI_20261021_195643.txt"
+tags:
+  - meeting
+  - wearable-notes
+  - executive
+  - omi
+  - topic/lip-sync
+  - project/audio-pipeline
+---
+
+# Investigation of Lip-Sync Hardener vs Audio Usage
+
+*Recorded via Wearable Audio on 2026-10-21* | Source: `OMI_20261021_195643.txt`
+
+## 📋 Executive Summary
+The executive raised a question regarding the necessity of a lip-sync hardener in the pipeline, questioning whether raw audio could be utilized directly instead. An assignment was given to investigate how the hardener functions and evaluate audio-only alternatives.
+
+## 🎯 Key Decisions
+- **Decision:** Initiate an investigation into the necessity and functioning of the lip-sync hardener versus using direct audio.
+
+## ✅ Action Items
+- [ ] [MEDIUM] **Investigate how the lip-sync hardener works and evaluate if audio can be used instead** (@Engineering Team)
+  - *Context:* Executive questioned technical dependency and requested alternative analysis.
+
+## 🧭 Routing & Context
+- **Obsidian Vault:** Saved to `Executive Briefs`
+- **Email Dispatch:** Not triggered (internal engineering inquiry)
+```
+
+---
+
+## 🧪 Testing
+
+OmiDaemon includes a full automated test suite:
 ```powershell
 $env:PYTHONPATH="src"
 python -m unittest discover tests -v
@@ -84,8 +198,15 @@ python -m unittest discover tests -v
 
 ---
 
-## 🛡️ Notch Standard 1.0 & Nudge Supervision
+## 🛡️ Notch Standard 1.0 Supervised Release
 
-- **Supervisor**: Nudge by Notch (port 8765)
-- **Status**: Registered in `desktop.roots` and synced with private bridge
-- **Contract Boundaries**: `src/**`, `tests/**`, `config/**`, `pyproject.toml`, `README.md`, `.env.example`, `.gitignore`
+This project is developed and released under **Notch Standard 1.0** and supervised in-flight by **Nudge by Notch**:
+* **Cryptographic Release State**: Validated on local Earned ledger (`events.jsonl`).
+* **Deterministic Acceptance**: Automated test suites executed with clean workspace hashes.
+* **Privacy & Security**: Zero hardcoded secrets; credentials remain strictly in local `.env` files.
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
