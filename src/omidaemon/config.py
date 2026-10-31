@@ -68,8 +68,32 @@ class AppConfig:
     state_db_path: str = "data/omidaemon_state.db"
 
     @classmethod
+    def _load_dotenv(cls) -> None:
+        """Load .env file from CWD or project root into os.environ if not already set."""
+        candidates = [
+            Path.cwd() / ".env",
+            Path(__file__).resolve().parent.parent.parent / ".env",
+        ]
+        for p in candidates:
+            if p.is_file():
+                try:
+                    for line in p.read_text(encoding="utf-8").splitlines():
+                        line = line.strip()
+                        if not line or line.startswith("#") or "=" not in line:
+                            continue
+                        k, v = line.split("=", 1)
+                        k = k.strip()
+                        v = v.strip().strip("'\"")
+                        if k and k not in os.environ:
+                            os.environ[k] = v
+                    break
+                except Exception:
+                    pass
+
+    @classmethod
     def load(cls, config_path: Optional[str] = None) -> "AppConfig":
         """Load configuration merging defaults, YAML file, and environment variables."""
+        cls._load_dotenv()
         cfg = cls()
 
         # 1. Load YAML file if present
