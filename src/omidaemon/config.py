@@ -11,7 +11,7 @@ import yaml
 class LLMConfig:
     provider: str = "gemini"  # gemini, openai, anthropic
     api_key: str = ""
-    model: str = "gemini-2.5-flash"
+    model: str = "gemini-3.5-flash-lite"
     temperature: float = 0.2
 
 
