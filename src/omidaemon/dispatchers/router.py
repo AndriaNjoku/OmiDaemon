@@ -25,6 +25,10 @@ class ActionRouter:
             "slides": None,
             "calendar": [],
         }
+        if not result.keep:
+            report["filtered"] = True
+            report["reason"] = result.routing.reasoning or "No lasting user relevance"
+            return report
 
         # 1. Obsidian Vault
         if result.routing.save_obsidian:

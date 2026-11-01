@@ -32,5 +32,16 @@ class TestContextEngine(unittest.TestCase):
         self.assertIn("partner", result.routing.email_recipients)
 
 
+    def test_builds_filter_and_calendar_evidence(self):
+        result = ContextEngine._build_result({'keep': False, 'calendar_events': [{'title': 'Review', 'evidence': 'Agreed review', 'confirmed': True}]}, '')
+        self.assertFalse(result.keep)
+        self.assertEqual(result.calendar_events[0].evidence, 'Agreed review')
+        self.assertTrue(result.calendar_events[0].confirmed)
+
+    def test_calendar_confirmation_defaults_to_false(self):
+        result = ContextEngine._build_result({'calendar_events': [{'title': 'Review'}]}, '')
+        self.assertFalse(result.calendar_events[0].confirmed)
+
+
 if __name__ == "__main__":
     unittest.main()

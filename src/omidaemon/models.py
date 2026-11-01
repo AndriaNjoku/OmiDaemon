@@ -88,6 +88,8 @@ class CalendarEventProposal:
     start_time: Optional[str] = None
     duration_minutes: int = 30
     attendees: List[str] = field(default_factory=list)
+    evidence: str = ""
+    confirmed: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -96,6 +98,8 @@ class CalendarEventProposal:
             "start_time": self.start_time,
             "duration_minutes": self.duration_minutes,
             "attendees": self.attendees,
+            "evidence": self.evidence,
+            "confirmed": self.confirmed,
         }
 
 
@@ -112,6 +116,7 @@ class AnalysisResult:
     calendar_events: List[CalendarEventProposal] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)
     raw_snippet: str = ""
+    keep: bool = True
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -126,6 +131,7 @@ class AnalysisResult:
             "calendar_events": [c.to_dict() for c in self.calendar_events],
             "tags": self.tags,
             "raw_snippet": self.raw_snippet,
+            "keep": self.keep,
         }
 
 

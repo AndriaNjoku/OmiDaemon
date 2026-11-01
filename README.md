@@ -111,6 +111,14 @@ OMIDAEMON_EMAIL_STAFF=team@company.com
 
 ## 🖥️ Running OmiDaemon
 
+### Output relevance and Google Calendar
+
+New transcripts are screened for lasting personal or professional relevance. Incidental media, fictional dialogue and low-value fragments are tracked without generating outputs; mixed audio retains meaningful user remarks. Email and slide drafts require an explicit request or agreed follow-up rather than being generated for every strategic-sounding conversation.
+
+Calendar proposals must have an agreed commitment, a matching source quote and an exact future timestamp with a timezone. Ambiguous or historical dates are held rather than replaced with a guessed appointment. Local ICS exports use the extracted interval.
+
+Google Calendar sync is opt-in and separate from the Gemini API key. `OMIDAEMON_GOOGLE_CALENDAR_ENABLED=true` enables a local outbox; a separately configured connected-calendar worker consumes it. The outbox alone does not write to Google. See [calendar sync setup and review procedure](docs/calendar-sync.md) for duplicate checks, conflict handling and local scheduling requirements. Email sending remains separately controlled by `OMIDAEMON_EMAIL_ENABLED`.
+
 ### Option A: Native Windows System Tray Companion *(Recommended)*
 Launch the Windows System Tray application:
 ```powershell

@@ -48,5 +48,16 @@ class TestActionRouter(unittest.TestCase):
         self.assertEqual(len(report["calendar"]), 0)
 
 
+    def test_filtered_media_has_no_outputs(self):
+        from unittest.mock import patch
+        doc = TranscriptDocument('media.txt', 'media.txt', 'hash', 'Background dialogue', 0)
+        result = AnalysisResult('Background media', MeetingCategory.OTHER, 'Media only', keep=False)
+        with patch.object(self.router.obsidian, 'dispatch') as obsidian, patch.object(self.router.email, 'dispatch') as email, patch.object(self.router.slides, 'dispatch') as slides, patch.object(self.router.calendar, 'dispatch') as calendar:
+            report = self.router.route(result, doc)
+        for dispatch in [obsidian, email, slides, calendar]:
+            dispatch.assert_not_called()
+        self.assertTrue(report['filtered'])
+
+
 if __name__ == "__main__":
     unittest.main()

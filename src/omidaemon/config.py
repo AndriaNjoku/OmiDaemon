@@ -55,6 +55,9 @@ class SlidesConfig:
 class CalendarConfig:
     enabled: bool = True
     output_dir: str = "output/calendar"
+    google_sync_enabled: bool = False
+    outbox_dir: str = "data/calendar-outbox"
+    calendar_id: str = "primary"
 
 
 @dataclass
@@ -154,6 +157,9 @@ class AppConfig:
             c = yaml_data["calendar"]
             cfg.calendar.enabled = bool(c.get("enabled", cfg.calendar.enabled))
             cfg.calendar.output_dir = c.get("output_dir", cfg.calendar.output_dir)
+            cfg.calendar.google_sync_enabled = bool(c.get("google_sync_enabled", False))
+            cfg.calendar.outbox_dir = c.get("outbox_dir", cfg.calendar.outbox_dir)
+            cfg.calendar.calendar_id = c.get("calendar_id", cfg.calendar.calendar_id)
 
         # 2. Environment Variable Overrides
         env = os.environ
@@ -209,5 +215,11 @@ class AppConfig:
 
         if "OMIDAEMON_CALENDAR_DIR" in env:
             cfg.calendar.output_dir = env["OMIDAEMON_CALENDAR_DIR"]
+        if "OMIDAEMON_GOOGLE_CALENDAR_ENABLED" in env:
+            cfg.calendar.google_sync_enabled = env["OMIDAEMON_GOOGLE_CALENDAR_ENABLED"].lower() in ("true", "1", "yes")
+        if "OMIDAEMON_CALENDAR_OUTBOX" in env:
+            cfg.calendar.outbox_dir = env["OMIDAEMON_CALENDAR_OUTBOX"]
+        if "OMIDAEMON_CALENDAR_ID" in env:
+            cfg.calendar.calendar_id = env["OMIDAEMON_CALENDAR_ID"]
 
         return cfg

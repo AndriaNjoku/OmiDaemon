@@ -17,7 +17,7 @@ from .parser import TranscriptParser
 from .llm_client import LLMClient
 
 
-SYSTEM_PROMPT = """You are an elite Chief of Staff and Executive AI Assistant to a CEO/CTO.
+SYSTEM_PROMPT = """You are a careful personal and professional memory assistant.
 Your job is to read raw audio transcripts recorded from the user's wearable AI device (such as Omi / Based Hardware / Friend), analyze the conversation with sharp executive judgment, and produce an intelligent, highly structured output.
 
 You must:
@@ -26,10 +26,12 @@ You must:
 3. Extract clear, concrete Key Decisions that were agreed upon.
 4. Extract Action Items with specific assignees, priority (high, medium, low), and deadlines if discussed.
 5. Determine where this information should be routed:
-   - Always route to Obsidian document repository.
-   - If decisions or status affect the partner, leadership, or staff, set send_email=true and draft a professional markdown email ready to send.
-   - If the conversation was a pitch, strategy review, or presentation outline, set draft_slides=true and draft an outline for presentation slides.
-   - If explicit follow-up meetings or calendar commitments were made, set update_calendar=true and detail the calendar event proposals.
+   - Keep useful personal memories, substantive work discussions, explicit user requirements and real commitments. Set keep=false for incidental background TV, podcasts, news playback, gaming dialogue, routine errands, fragments and repeated filler without lasting user relevance. Do not convert fictional dialogue into executive strategy or assign the user tasks from media.
+   - In mixed recordings, retain only the meaningful user conversation; discard the background narrative. Never invent teams, assignees, diagnoses, decisions, or deadlines.
+   - Route retained material to Obsidian. Set all routing flags false and drafts null when keep=false.
+   - Draft email only when the user explicitly requests a message or agrees a real follow-up message. Do not invent corporate recipients for personal, school or media conversations.
+   - Draft slides only when the user explicitly requests a presentation or agrees to prepare one. A useful idea alone does not require a deck.
+   - Propose calendar events only for explicit personal commitments or meetings involving the user. Include an exact short transcript quote as evidence and confirmed=true only when the commitment was actually agreed. Use an ISO timestamp with an explicit UTC offset only when the date, year, time and timezone are unambiguous. Otherwise leave start_time null; never guess a date or schedule background media. Use the recording date, not today's date, to interpret relative dates.
 6. Provide relevant searchable tags (e.g., meeting/exec, project/alpha, strategy).
 
 Output MUST be valid JSON adhering exactly to the requested schema. Do not add conversational prelude or postscript.
@@ -49,6 +51,7 @@ RAW TRANSCRIPT:
 Produce a JSON response matching this schema:
 {{
   "title": "<Concise descriptive title of the meeting or topic>",
+  "keep": <true only if there is lasting user relevance>,
   "category": "executive_strategic" | "one_on_one" | "engineering_sync" | "partner_sync" | "pitch_or_presentation" | "casual_brainstorm" | "other",
   "summary": "<2-4 sentence executive overview of the conversation and core outcomes>",
   "key_decisions": ["<decision 1>", "<decision 2>"],
@@ -85,9 +88,11 @@ Produce a JSON response matching this schema:
     {{
       "title": "<Meeting Title>",
       "description": "<Agenda>",
-      "start_time": "<ISO timestamp or relative description>",
+      "start_time": "<ISO timestamp including UTC offset, or null>",
       "duration_minutes": 30,
-      "attendees": ["<email or name>"]
+      "attendees": ["<email or name>"],
+      "evidence": "<exact short transcript quote establishing the commitment>",
+      "confirmed": <true only for an agreed commitment>
     }}
   ],
   "tags": ["meeting/...", "topic/..."]
@@ -199,6 +204,8 @@ class ContextEngine:
                         start_time=ce.get("start_time"),
                         duration_minutes=int(ce.get("duration_minutes", 30)),
                         attendees=list(ce.get("attendees", [])),
+                        evidence=str(ce.get("evidence") or ""),
+                        confirmed=ce.get("confirmed") is True,
                     )
                 )
 
@@ -214,4 +221,5 @@ class ContextEngine:
             calendar_events=calendar_events,
             tags=list(data.get("tags", [])),
             raw_snippet=raw_snippet,
+            keep=data.get("keep", True) is not False,
         )

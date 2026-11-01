@@ -42,6 +42,9 @@ slides:
 calendar:
   enabled: true
   output_dir: "output/calendar"
+  google_sync_enabled: false
+  outbox_dir: "data/calendar-outbox"
+  calendar_id: "primary"
 
 routing_rules:
   auto_email_threshold: "partner_or_staff_decision"
