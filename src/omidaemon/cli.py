@@ -3,6 +3,7 @@
 import argparse
 import sys
 import time
+import re
 from pathlib import Path
 from .config import AppConfig
 from .models import TranscriptDocument
@@ -10,6 +11,15 @@ from .watcher import StateTracker, LocalDriveWatcher
 from .processor import LLMClient, ContextEngine
 from .dispatchers import ActionRouter
 from .service import DaemonService
+
+
+def rate_limit_delay(error: Exception) -> float:
+    """Pause the whole processing queue when the provider exhausts its quota."""
+    message = str(error)
+    if "API error (429)" not in message:
+        return 0
+    match = re.search(r'"retryDelay"\s*:\s*"([0-9.]+)s"', message)
+    return max(60.0, float(match.group(1)) + 1) if match else 60.0
 
 
 def process_single_file(file_path: Path, config: AppConfig, force: bool = False) -> None:
@@ -121,6 +131,10 @@ def run_daemon(config: AppConfig) -> None:
             except Exception as e:
                 print(f"[{time.strftime('%X')}] [Error] Processing failed for {doc.file_name}: {e}", file=sys.stderr)
                 state_tracker.record_failure(doc.file_path, doc.sha256, str(e))
+                delay = rate_limit_delay(e)
+                if delay:
+                    print(f"[{time.strftime('%X')}] Provider rate limit; pausing queue for {delay:.0f}s.", flush=True)
+                    time.sleep(delay)
     except KeyboardInterrupt:
         print("\nOmiDaemon shutting down gracefully.")
 
